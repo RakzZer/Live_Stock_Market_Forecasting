@@ -39,44 +39,73 @@ if csv_file is None:
 print(f"📂 Reading data from {csv_file}...")
 
 # Try to read the CSV with different formats
-try:
-    # Try Spanish format first (semicolon separator, comma as decimal)
-    data = pd.read_csv(csv_file, sep=';', decimal=',', thousands='.', quotechar='"', encoding='utf-8-sig')
+data = None
+parsing_error = None
 
-    # Remove quotes from column names if present
-    data.columns = data.columns.str.replace('"', '').str.strip()
+# Try different separator and decimal combinations
+formats_to_try = [
+    # Spanish format with quotes (most common from Investing.com)
+    {'sep': ',', 'decimal': ',', 'thousands': '.', 'quotechar': '"', 'encoding': 'utf-8-sig',
+     'name': 'Spanish with quotes (comma sep, comma decimal)'},
+    # English standard
+    {'sep': ',', 'decimal': '.', 'thousands': ',', 'quotechar': '"', 'encoding': 'utf-8-sig',
+     'name': 'English (comma sep, dot decimal)'},
+    # Spanish semicolon
+    {'sep': ';', 'decimal': ',', 'thousands': '.', 'quotechar': '"', 'encoding': 'utf-8-sig',
+     'name': 'Spanish (semicolon sep, comma decimal)'},
+]
 
-    # Map Spanish column names to English
-    column_mapping = {
-        'Fecha': 'Date',
-        'Último': 'Close',
-        'Apertura': 'Open',
-        'Máximo': 'High',
-        'Mínimo': 'Low',
-        'Vol.': 'Volume',
-        '% var.': 'Change%',
-        'Last': 'Close',
-        'First': 'Open',
-        'Max': 'High',
-        'Min': 'Low'
-    }
-
-    data.rename(columns=column_mapping, inplace=True)
-
-    print(f"✅ CSV read successfully with Spanish format")
-    print(f"Columns detected: {list(data.columns)}")
-
-except Exception as e:
-    # Try standard English format (comma separator, dot as decimal)
+for fmt in formats_to_try:
     try:
-        data = pd.read_csv(csv_file, encoding='utf-8-sig')
-        print(f"✅ CSV read successfully with English format")
-        print(f"Columns detected: {list(data.columns)}")
-    except Exception as e2:
-        print(f"❌ Error reading CSV: {e}")
-        print(f"Second attempt error: {e2}")
-        print("\nPlease make sure your CSV file is in the correct format")
-        sys.exit(1)
+        temp_data = pd.read_csv(
+            csv_file,
+            sep=fmt['sep'],
+            decimal=fmt['decimal'],
+            thousands=fmt.get('thousands', None),
+            quotechar=fmt.get('quotechar', '"'),
+            encoding=fmt['encoding']
+        )
+
+        # Check if we got multiple columns (successful parsing)
+        if len(temp_data.columns) > 2:
+            data = temp_data
+            print(f"✅ CSV parsed with format: {fmt['name']}")
+            print(f"Columns found: {list(data.columns)}")
+            break
+    except Exception as e:
+        parsing_error = e
+        continue
+
+if data is None:
+    print(f"❌ Could not parse CSV file with any known format")
+    print(f"Last error: {parsing_error}")
+    sys.exit(1)
+
+# Remove quotes and whitespace from column names
+data.columns = data.columns.str.replace('"', '').str.strip()
+
+# Map Spanish column names to English
+column_mapping = {
+    'Fecha': 'Date',
+    'Último': 'Close',
+    'Apertura': 'Open',
+    'Máximo': 'High',
+    'Mínimo': 'Low',
+    'Vol.': 'Volume',
+    '% var.': 'Change%',
+    'Last': 'Close',
+    'First': 'Open',
+    'Max': 'High',
+    'Min': 'Low',
+    'Close': 'Close',
+    'Open': 'Open',
+    'High': 'High',
+    'Low': 'Low',
+    'Date': 'Date'
+}
+
+data.rename(columns=column_mapping, inplace=True)
+print(f"Columns after mapping: {list(data.columns)}")
 
 # Ensure we have the required columns
 required_columns = ['Open', 'Close']
