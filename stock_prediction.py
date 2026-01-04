@@ -6,8 +6,8 @@ import yfinance as yf
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from keras.models import Sequential
-from keras.layers import Dense, LSTM
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM
 
 # See the yahoo finance ticker for your stock symbol
 stock_symbol = 'URTH'
