@@ -15,15 +15,30 @@ stock_symbol = 'SPY'
 
 print(f"Downloading data for {stock_symbol}...")
 # Last 5 years data with interval of 1 day
-data = yf.download(tickers=stock_symbol, period='5y', interval='1d', progress=False)
+try:
+    # Try downloading with updated headers to bypass blocking
+    import requests
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+    session = requests.Session()
+    session.headers.update(headers)
+
+    data = yf.download(tickers=stock_symbol, period='5y', interval='1d', progress=False, session=session)
+except Exception as e:
+    print(f"Download failed: {e}")
+    data = None
 
 # Validate data
-if data.empty or len(data) < 200:
-    print(f"\nError: Could not download sufficient data for {stock_symbol}")
-    print("Please check:")
-    print("1. Your internet connection")
-    print("2. The ticker symbol is correct")
-    print("3. Try using: SPY, AAPL, MSFT, or ^GSPC")
+if data is None or data.empty or len(data) < 200:
+    print(f"\n⚠️ Yahoo Finance download failed for {stock_symbol}")
+    print("\nPossible solutions:")
+    print("1. Update yfinance: pip install --upgrade yfinance")
+    print("2. Check your internet connection")
+    print("3. Yahoo Finance might be temporarily unavailable")
+    print("4. Try running the script again in a few minutes")
+    print("\nAlternative: You can download CSV data manually from:")
+    print(f"https://finance.yahoo.com/quote/{stock_symbol}/history")
     exit(1)
 
 print(f"Total records: {len(data)}")
