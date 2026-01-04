@@ -10,10 +10,21 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM
 
 # See the yahoo finance ticker for your stock symbol
-stock_symbol = 'URTH'
+# Options: SPY (S&P 500), AAPL (Apple), MSFT (Microsoft), ^GSPC (S&P 500 Index)
+stock_symbol = 'SPY'
 
+print(f"Downloading data for {stock_symbol}...")
 # Last 5 years data with interval of 1 day
-data = yf.download(tickers=stock_symbol, period='5y', interval='1d')
+data = yf.download(tickers=stock_symbol, period='5y', interval='1d', progress=False)
+
+# Validate data
+if data.empty or len(data) < 200:
+    print(f"\nError: Could not download sufficient data for {stock_symbol}")
+    print("Please check:")
+    print("1. Your internet connection")
+    print("2. The ticker symbol is correct")
+    print("3. Try using: SPY, AAPL, MSFT, or ^GSPC")
+    exit(1)
 
 print(f"Total records: {len(data)}")
 print("\nFirst 5 rows:")
