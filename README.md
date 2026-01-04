@@ -43,14 +43,31 @@ pip install -r requirements.txt
 
 ## 🎯 Usage
 
+### Option 1: Using CSV File (Recommended if Yahoo Finance is blocked)
+
+1. **Download stock data manually:**
+   - Go to [Yahoo Finance - SPY](https://finance.yahoo.com/quote/SPY/history)
+   - Set time period to **5Y** (5 years)
+   - Click the **Download** button
+   - Save the file as `stock_data.csv` in the project directory
+
+2. **Run the CSV version:**
+   ```bash
+   python stock_prediction_csv.py
+   ```
+
+### Option 2: Auto-download from Yahoo Finance
+
 Simply run the Python script:
 
 ```bash
 python stock_prediction.py
 ```
 
-The script will:
-1. Download 5 years of historical data
+**Note:** If you get download errors, Yahoo Finance might be blocking requests. Use Option 1 instead.
+
+Both scripts will:
+1. Load/Download 5 years of historical data
 2. Train the LSTM model (100 epochs)
 3. Generate predictions for the next 30 days
 4. Save visualization plots as PNG files
