@@ -27,12 +27,60 @@ if not os.path.exists(csv_file):
 
 # Read CSV file
 print(f"📂 Reading data from {csv_file}...")
-data = pd.read_csv(csv_file)
 
-# Yahoo Finance CSV format has 'Date' column
-if 'Date' in data.columns:
-    data['Date'] = pd.to_datetime(data['Date'])
+# Try to read the CSV with different formats
+try:
+    # Try Spanish format first (semicolon separator, comma as decimal)
+    data = pd.read_csv(csv_file, sep=';', decimal=',', thousands='.')
+
+    # Map Spanish column names to English
+    column_mapping = {
+        'Fecha': 'Date',
+        'Último': 'Close',
+        'Apertura': 'Open',
+        'Máximo': 'High',
+        'Mínimo': 'Low',
+        'Vol.': 'Volume',
+        'Last': 'Close',
+        'First': 'Open',
+        'Max': 'High',
+        'Min': 'Low'
+    }
+
+    data.rename(columns=column_mapping, inplace=True)
+
+except:
+    # Try standard English format (comma separator, dot as decimal)
+    try:
+        data = pd.read_csv(csv_file)
+    except Exception as e:
+        print(f"❌ Error reading CSV: {e}")
+        print("\nPlease make sure your CSV file is in the correct format")
+        sys.exit(1)
+
+# Ensure we have the required columns
+required_columns = ['Open', 'Close']
+if not all(col in data.columns for col in required_columns):
+    print(f"❌ Missing required columns!")
+    print(f"Available columns: {list(data.columns)}")
+    print(f"Required columns: {required_columns}")
+    sys.exit(1)
+
+# Handle Date column
+if 'Date' in data.columns or 'Fecha' in data.columns:
+    date_col = 'Date' if 'Date' in data.columns else 'Fecha'
+    data['Date'] = pd.to_datetime(data[date_col], dayfirst=True, errors='coerce')
     data.set_index('Date', inplace=True)
+    # Sort by date ascending (oldest first)
+    data.sort_index(inplace=True)
+
+# Create missing columns if needed
+if 'High' not in data.columns:
+    data['High'] = data[['Open', 'Close']].max(axis=1)
+if 'Low' not in data.columns:
+    data['Low'] = data[['Open', 'Close']].min(axis=1)
+if 'Adj Close' not in data.columns:
+    data['Adj Close'] = data['Close']
 
 print(f"✅ Total records: {len(data)}")
 print("\nFirst 5 rows:")
