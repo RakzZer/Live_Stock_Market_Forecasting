@@ -11,18 +11,28 @@ from tensorflow.keras.layers import Dense, LSTM
 import os
 import sys
 
-# CSV file path
-csv_file = 'stock_data.csv'
+# CSV file path - try multiple possible names
+possible_files = [
+    'Datos históricos del MSCI World.csv',
+    'stock_data.csv',
+    'URTH.csv',
+    'SPY.csv'
+]
+
+csv_file = None
+for filename in possible_files:
+    if os.path.exists(filename):
+        csv_file = filename
+        break
 
 # Check if CSV file exists
-if not os.path.exists(csv_file):
-    print(f"❌ CSV file '{csv_file}' not found!")
-    print("\n📥 Please download stock data manually:")
-    print("1. Go to: https://finance.yahoo.com/quote/SPY/history")
-    print("2. Set time period to '5Y' (5 years)")
-    print("3. Click 'Download' button")
-    print(f"4. Save the file as '{csv_file}' in this directory")
-    print("\n💡 Or use any stock ticker: AAPL, MSFT, GOOGL, etc.")
+if csv_file is None:
+    print(f"❌ No CSV file found!")
+    print(f"\n📥 Looking for one of these files:")
+    for f in possible_files:
+        print(f"   - {f}")
+    print("\n💡 Please download stock data and save it in this directory")
+    print("Or run: python generate_sample_data.py")
     sys.exit(1)
 
 # Read CSV file
