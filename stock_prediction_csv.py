@@ -41,7 +41,10 @@ print(f"📂 Reading data from {csv_file}...")
 # Try to read the CSV with different formats
 try:
     # Try Spanish format first (semicolon separator, comma as decimal)
-    data = pd.read_csv(csv_file, sep=';', decimal=',', thousands='.')
+    data = pd.read_csv(csv_file, sep=';', decimal=',', thousands='.', quotechar='"', encoding='utf-8-sig')
+
+    # Remove quotes from column names if present
+    data.columns = data.columns.str.replace('"', '').str.strip()
 
     # Map Spanish column names to English
     column_mapping = {
@@ -51,6 +54,7 @@ try:
         'Máximo': 'High',
         'Mínimo': 'Low',
         'Vol.': 'Volume',
+        '% var.': 'Change%',
         'Last': 'Close',
         'First': 'Open',
         'Max': 'High',
@@ -59,12 +63,18 @@ try:
 
     data.rename(columns=column_mapping, inplace=True)
 
-except:
+    print(f"✅ CSV read successfully with Spanish format")
+    print(f"Columns detected: {list(data.columns)}")
+
+except Exception as e:
     # Try standard English format (comma separator, dot as decimal)
     try:
-        data = pd.read_csv(csv_file)
-    except Exception as e:
+        data = pd.read_csv(csv_file, encoding='utf-8-sig')
+        print(f"✅ CSV read successfully with English format")
+        print(f"Columns detected: {list(data.columns)}")
+    except Exception as e2:
         print(f"❌ Error reading CSV: {e}")
+        print(f"Second attempt error: {e2}")
         print("\nPlease make sure your CSV file is in the correct format")
         sys.exit(1)
 
