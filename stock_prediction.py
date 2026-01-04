@@ -10,8 +10,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM
 
 # See the yahoo finance ticker for your stock symbol
-# Options: SPY (S&P 500), AAPL (Apple), MSFT (Microsoft), ^GSPC (S&P 500 Index)
-stock_symbol = 'SPY'
+# MSCI World ETF options: URTH, ACWI, VT
+# Other options: SPY (S&P 500), AAPL (Apple), MSFT (Microsoft)
+stock_symbol = 'URTH'  # iShares MSCI World ETF
 
 print(f"Downloading data for {stock_symbol}...")
 # Last 5 years data with interval of 1 day
